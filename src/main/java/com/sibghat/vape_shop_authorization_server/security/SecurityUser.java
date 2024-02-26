@@ -1,6 +1,6 @@
 package com.sibghat.vape_shop_authorization_server.security;
 
-import com.sibghat.vape_shop_authorization_server.domains.User;
+import com.sibghat.vape_shop_authorization_server.dtos.SecurityUserDto;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -9,9 +9,9 @@ import java.util.List;
 
 public class SecurityUser implements UserDetails {
 
-    private final User user;
+    private final SecurityUserDto user;
 
-    public SecurityUser(User user) {
+    public SecurityUser(SecurityUserDto user) {
         this.user = user;
     }
 
@@ -47,6 +47,6 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.isEnabled();
+        return user.getEnabled();
     }
 }

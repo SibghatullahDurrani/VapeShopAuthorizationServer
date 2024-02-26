@@ -14,10 +14,10 @@ import java.util.Optional;
 @Service
 public class JpaRegisteredClientRepository implements RegisteredClientRepository {
 
-    private final CustomRegisteredClientRepository customRegisteredClientRepositry;
+    private final CustomRegisteredClientRepository customRegisteredClientRepository;
 
-    public JpaRegisteredClientRepository(CustomRegisteredClientRepository customRegisteredClientRepositry) {
-        this.customRegisteredClientRepositry = customRegisteredClientRepositry;
+    public JpaRegisteredClientRepository(CustomRegisteredClientRepository customRegisteredClientRepository) {
+        this.customRegisteredClientRepository = customRegisteredClientRepository;
     }
 
     @Override
@@ -27,12 +27,12 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
                 .clientId(registeredClient.getClientId())
                 .clientSecret(registeredClient.getClientSecret())
                 .build();
-        customRegisteredClientRepositry.save(customRegisteredClient);
+        customRegisteredClientRepository.save(customRegisteredClient);
     }
 
     @Override
     public RegisteredClient findById(String id) {
-        Optional<CustomRegisteredClient> customRegisteredClient = customRegisteredClientRepositry.findById(id);
+        Optional<CustomRegisteredClient> customRegisteredClient = customRegisteredClientRepository.findById(id);
         return customRegisteredClient.map(registeredClient -> RegisteredClient.withId(registeredClient.getId())
                 .clientId(registeredClient.getClientId())
                 .clientSecret(registeredClient.getClientSecret())
@@ -47,7 +47,7 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
 
     @Override
     public RegisteredClient findByClientId(String clientId) {
-        Optional<CustomRegisteredClient> customRegisteredClient = customRegisteredClientRepositry.findByClientId(clientId);
+        Optional<CustomRegisteredClient> customRegisteredClient = customRegisteredClientRepository.findByClientId(clientId);
         return customRegisteredClient.map(registeredClient -> RegisteredClient.withId(registeredClient.getId())
                 .clientId(registeredClient.getClientId())
                 .clientSecret(registeredClient.getClientSecret())

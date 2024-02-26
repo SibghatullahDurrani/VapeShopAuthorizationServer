@@ -1,5 +1,6 @@
 package com.sibghat.vape_shop_authorization_server.domains;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -62,6 +63,7 @@ public class Address {
     @JoinColumn(
             name = "user_id"
     )
+    @JsonBackReference
     private User user;
 
 }
