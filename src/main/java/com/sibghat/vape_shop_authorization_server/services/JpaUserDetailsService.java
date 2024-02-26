@@ -1,4 +1,4 @@
-package com.sibghat.vape_shop_authorization_server;
+package com.sibghat.vape_shop_authorization_server.services;
 
 
 import com.sibghat.vape_shop_authorization_server.domains.User;
