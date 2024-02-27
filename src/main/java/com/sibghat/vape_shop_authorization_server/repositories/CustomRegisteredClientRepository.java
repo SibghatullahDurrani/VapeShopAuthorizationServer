@@ -1,12 +1,12 @@
 package com.sibghat.vape_shop_authorization_server.repositories;
 
-import com.sibghat.vape_shop_authorization_server.domains.CustomRegisteredClient;
+import com.sibghat.vape_shop_authorization_server.domains.Client;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface CustomRegisteredClientRepository extends JpaRepository<CustomRegisteredClient,String> {
+public interface CustomRegisteredClientRepository extends JpaRepository<Client,String> {
 
-    Optional<CustomRegisteredClient> findByClientId(String clientId);
+    Optional<Client> findByClientId(String clientId);
 
 }

@@ -1,10 +1,11 @@
 package com.sibghat.vape_shop_authorization_server.repositories;
 
-import com.sibghat.vape_shop_authorization_server.domains.CustomRegisteredClient;
+import com.sibghat.vape_shop_authorization_server.domains.Client;
+import com.sibghat.vape_shop_authorization_server.mappers.AuthGrantTypesConsumerMapper;
+import com.sibghat.vape_shop_authorization_server.mappers.ClientAuthConsumerMapper;
+import com.sibghat.vape_shop_authorization_server.mappers.RedirectUrisConsumerMapper;
+import com.sibghat.vape_shop_authorization_server.mappers.ScopesConsumerMapper;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.Optional;
 @Service
 public class JpaRegisteredClientRepository implements RegisteredClientRepository {
 
+
     private final CustomRegisteredClientRepository customRegisteredClientRepository;
 
     public JpaRegisteredClientRepository(CustomRegisteredClientRepository customRegisteredClientRepository) {
@@ -22,41 +24,48 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
 
     @Override
     public void save(RegisteredClient registeredClient) {
-        CustomRegisteredClient customRegisteredClient = CustomRegisteredClient.builder()
+        Client client = Client.builder()
                 .id(registeredClient.getId())
                 .clientId(registeredClient.getClientId())
                 .clientSecret(registeredClient.getClientSecret())
                 .build();
-        customRegisteredClientRepository.save(customRegisteredClient);
+        customRegisteredClientRepository.save(client);
     }
 
     @Override
     public RegisteredClient findById(String id) {
-        Optional<CustomRegisteredClient> customRegisteredClient = customRegisteredClientRepository.findById(id);
-        return customRegisteredClient.map(registeredClient -> RegisteredClient.withId(registeredClient.getId())
-                .clientId(registeredClient.getClientId())
-                .clientSecret(registeredClient.getClientSecret())
-                .scope(OidcScopes.OPENID)
-                .redirectUri("https://springone.io/authorized")
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .build())
-                .orElseThrow(() -> new EntityNotFoundException("client not registered"));
+        Optional<Client> customRegisteredClient = customRegisteredClientRepository.findById(id);
+        return getRegisteredClient(customRegisteredClient);
     }
 
     @Override
     public RegisteredClient findByClientId(String clientId) {
-        Optional<CustomRegisteredClient> customRegisteredClient = customRegisteredClientRepository.findByClientId(clientId);
-        return customRegisteredClient.map(registeredClient -> RegisteredClient.withId(registeredClient.getId())
-                .clientId(registeredClient.getClientId())
-                .clientSecret(registeredClient.getClientSecret())
-                .scope(OidcScopes.OPENID)
-                .redirectUri("https://springone.io/authorized")
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .build())
-                .orElseThrow(() -> new EntityNotFoundException("client not registered"));
+        Optional<Client> customRegisteredClient = customRegisteredClientRepository.findByClientId(clientId);
+        return getRegisteredClient(customRegisteredClient);
+    }
+
+    private RegisteredClient getRegisteredClient(Optional<Client> customRegisteredClient) {
+        if(customRegisteredClient.isPresent()){
+            RegisteredClient.Builder registeredClientBuilder =
+                    RegisteredClient.withId(customRegisteredClient.get().getId())
+                            .clientId(customRegisteredClient.get().getClientId())
+                            .clientSecret(customRegisteredClient.get().getClientSecret());
+            ScopesConsumerMapper scopesConsumerMapper =
+                    new ScopesConsumerMapper(customRegisteredClient.get().getScopes());
+            RedirectUrisConsumerMapper redirectUrisConsumerMapper =
+                    new RedirectUrisConsumerMapper(customRegisteredClient.get().getRedirectUris());
+            ClientAuthConsumerMapper clientAuthConsumerMapper =
+                    new ClientAuthConsumerMapper(customRegisteredClient.get().getAuthenticationMethods());
+            AuthGrantTypesConsumerMapper authGrantTypesConsumerMapper =
+                    new AuthGrantTypesConsumerMapper(customRegisteredClient.get().getGrantTypes());
+            registeredClientBuilder.scopes(scopesConsumerMapper.map());
+            registeredClientBuilder.redirectUris(redirectUrisConsumerMapper.map());
+            registeredClientBuilder.clientAuthenticationMethods(clientAuthConsumerMapper.map());
+            registeredClientBuilder.authorizationGrantTypes(authGrantTypesConsumerMapper.map());
+
+            return registeredClientBuilder.build();
+        }else{
+            throw new EntityNotFoundException("client not registered");
+        }
     }
 }

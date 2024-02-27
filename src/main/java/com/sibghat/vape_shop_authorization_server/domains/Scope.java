@@ -12,16 +12,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "registered_clients")
-public class CustomRegisteredClient {
+@Table(name = "scopes")
+public class Scope {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "scopes_generator")
+    @SequenceGenerator(name = "scopes_generator", sequenceName = "scopes_seq", allocationSize = 1)
+    private Long id;
 
     @NotBlank
-    private String clientId;
-
-    @NotBlank
-    private String clientSecret;
+    @Column(
+            nullable = false
+    )
+    private String scope;
 
 }
