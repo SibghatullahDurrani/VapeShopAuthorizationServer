@@ -8,8 +8,11 @@ import com.sibghat.vape_shop_authorization_server.mappers.ScopesConsumerMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.HashSet;
 import java.util.Optional;
 
 @Service
@@ -53,7 +56,7 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
             ScopesConsumerMapper scopesConsumerMapper =
                     new ScopesConsumerMapper(customRegisteredClient.get().getScopes());
             RedirectUrisConsumerMapper redirectUrisConsumerMapper =
-                    new RedirectUrisConsumerMapper(customRegisteredClient.get().getRedirectUris());
+                    new RedirectUrisConsumerMapper(new HashSet<>(customRegisteredClient.get().getRedirectUris()));
             ClientAuthConsumerMapper clientAuthConsumerMapper =
                     new ClientAuthConsumerMapper(customRegisteredClient.get().getAuthenticationMethods());
             AuthGrantTypesConsumerMapper authGrantTypesConsumerMapper =
@@ -62,6 +65,9 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
             registeredClientBuilder.redirectUris(redirectUrisConsumerMapper.map());
             registeredClientBuilder.clientAuthenticationMethods(clientAuthConsumerMapper.map());
             registeredClientBuilder.authorizationGrantTypes(authGrantTypesConsumerMapper.map());
+            registeredClientBuilder.tokenSettings(TokenSettings.builder()
+                            .accessTokenTimeToLive(Duration.ofHours(24))
+                    .build());
 
             return registeredClientBuilder.build();
         }else{

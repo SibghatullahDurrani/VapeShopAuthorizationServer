@@ -1,5 +1,6 @@
 package com.sibghat.vape_shop_authorization_server.domains;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -26,7 +28,9 @@ public class Client {
     @NotBlank
     private String clientSecret;
 
-    @ManyToMany
+    @ManyToMany(
+            fetch = FetchType.EAGER
+    )
     @JoinTable(
             name = "clients_scopes",
             joinColumns = {
@@ -44,9 +48,11 @@ public class Client {
     )
     private Set<Scope> scopes;
 
-    @ManyToMany
+    @ManyToMany(
+            fetch = FetchType.EAGER
+    )
     @JoinTable(
-            name = "clients_authorization_methods",
+            name = "clients_authentication_methods",
             joinColumns = {
                     @JoinColumn(
                             name = "client_id",
@@ -62,7 +68,9 @@ public class Client {
     )
     private Set<AuthenticationMethod> authenticationMethods;
 
-    @ManyToMany
+    @ManyToMany(
+            fetch = FetchType.EAGER
+    )
     @JoinTable(
             name = "clients_grant_types",
             joinColumns = {
@@ -81,8 +89,10 @@ public class Client {
     private Set<GrantType> grantTypes;
 
     @OneToMany(
-            mappedBy = "client"
+            mappedBy = "client",
+            fetch = FetchType.EAGER
     )
-    private Set<RedirectUri> redirectUris;
+    @JsonManagedReference
+    private List<RedirectUri> redirectUris;
 
 }

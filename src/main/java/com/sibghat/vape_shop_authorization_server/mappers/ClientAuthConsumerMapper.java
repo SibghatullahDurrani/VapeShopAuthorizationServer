@@ -24,6 +24,6 @@ public class ClientAuthConsumerMapper implements ConsumerMapper<Set<ClientAuthen
 
     @Override
     public Consumer<Set<ClientAuthenticationMethod>> map() {
-        return null;
+        return this::addToSet;
     }
 }
