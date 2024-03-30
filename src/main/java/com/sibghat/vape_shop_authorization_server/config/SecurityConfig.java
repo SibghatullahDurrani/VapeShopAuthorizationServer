@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
@@ -22,6 +23,8 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -29,6 +32,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,7 +40,7 @@ import java.util.stream.Collectors;
 @Configuration
 public class SecurityConfig {
 
-    // http://localhost:8080/oauth2/authorize?response_type=code&client_id=client&scope=openid&redirect_uri=https://springone.io/authorized&code_challenge=JzaPItLqSjoNEd1pxg-Pd0oRluvFNbciTrqxTQQaRkU&code_challenge_method=S256
+    // http://localhost:8080/oauth2/authorize?response_type=code&client_id=client&scope=openid&redirect_uri=http://127.0.0.1:4200/authorized&code_challenge=JzaPItLqSjoNEd1pxg-Pd0oRluvFNbciTrqxTQQaRkU&code_challenge_method=S256
 
     @Bean
     @Order(1)
@@ -59,10 +63,26 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain appServerSecurityFilterChain(HttpSecurity http) throws Exception {
+        http.cors(c -> {
+            CorsConfigurationSource source = s -> {
+                CorsConfiguration cc = new CorsConfiguration();
+                cc.setAllowCredentials(true);
+                cc.setAllowedOrigins(List.of("http://127.0.0.1:4200"));
+                cc.setAllowedHeaders(List.of("*"));
+                cc.setAllowedMethods(List.of("*"));
+                return cc;
+            };
+            c.configurationSource(source);
+        });
         http.formLogin(Customizer.withDefaults())
                 .authorizeHttpRequests(req -> req.anyRequest().authenticated());
 
         return http.build();
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
+        return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
     @Bean
@@ -100,6 +120,7 @@ public class SecurityConfig {
         return context -> {
             if (context.getTokenType() == OAuth2TokenType.ACCESS_TOKEN) {
                 Authentication principal = context.getPrincipal();
+
                 Set<String> authorities = principal.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toSet());

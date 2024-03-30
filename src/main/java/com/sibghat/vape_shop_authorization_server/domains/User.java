@@ -61,7 +61,7 @@ public class User {
     @Column(
             unique = true
     )
-    private Integer verificationCode;
+    private String verificationCode;
 
     private boolean enabled;
 

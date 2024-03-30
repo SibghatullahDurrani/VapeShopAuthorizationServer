@@ -66,7 +66,9 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
             registeredClientBuilder.clientAuthenticationMethods(clientAuthConsumerMapper.map());
             registeredClientBuilder.authorizationGrantTypes(authGrantTypesConsumerMapper.map());
             registeredClientBuilder.tokenSettings(TokenSettings.builder()
-                            .accessTokenTimeToLive(Duration.ofHours(24))
+                            .reuseRefreshTokens(false)
+                            .refreshTokenTimeToLive(Duration.ofDays(60))
+                            .accessTokenTimeToLive(Duration.ofMinutes(10))
                     .build());
 
             return registeredClientBuilder.build();
